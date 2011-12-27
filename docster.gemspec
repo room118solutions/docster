@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Jim Ryan", "Chris Gunther"]
   s.email       = ["info@room118solutions.com"]
-  s.homepage    = ""
+  s.homepage    = "http://github.com/room118solutions/docster"
   s.summary     = %q{Generates searchable documentation for your ruby project}
   s.description = %q{TODO: Write a gem description}
 
