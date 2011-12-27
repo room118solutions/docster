@@ -6,10 +6,10 @@ Gem::Specification.new do |s|
   s.name        = "docster"
   s.version     = Docster::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["TODO: Write your name"]
-  s.email       = ["TODO: Write your email address"]
+  s.authors     = ["Jim Ryan", "Chris Gunther"]
+  s.email       = ["info@room118solutions.com"]
   s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
+  s.summary     = %q{Generates searchable documentation for your ruby project}
   s.description = %q{TODO: Write a gem description}
 
   s.rubyforge_project = "docster"
