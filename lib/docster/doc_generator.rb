@@ -3,32 +3,34 @@ require 'bundler'
 module Docster
   class DocGenerator
     def self.generate!(project_name, groups, ruby_version)
-      @@groups = groups
+      begin
+        @@groups = groups
       
-      create_docs_directory! unless Dir.exists?(docs_dir)
-      create_projects_directory! unless Dir.exists?(projects_path)
+        create_docs_directory! unless Dir.exists?(docs_dir)
+        create_projects_directory! unless Dir.exists?(projects_path)
       
-      changes = false
-      gems.each do |name, info|
-        unless Dir.exists?(doc_path_for name, info[:version])
-          generate_sdoc_for :type => :gem, :name => name, :version => info[:version], :path => info[:path]
+        changes = false
+        gems.each do |name, info|
+          unless Dir.exists?(doc_path_for name, info[:version])
+            generate_sdoc_for :type => :gem, :name => name, :version => info[:version], :path => info[:path]
+            changes = true
+          end
+        end
+      
+        unless ruby_version.nil? || Dir.exists?(doc_path_for 'ruby', ruby_version)
+          generate_sdoc_for :name => 'ruby', :version => ruby_version, :path => download_ruby(ruby_version)
           changes = true
         end
+      
+        if changes || !File.exists?(File.join(project_path_for(project_name), 'index.html'))
+          FileUtils.rm_rf project_path_for project_name
+          sdoc_merge project_name, ruby_version
+        end
+              
+        `open #{File.join project_path_for(project_name), 'index.html'}`
+      ensure
+        cleanup!
       end
-      
-      unless ruby_version.nil? || Dir.exists?(doc_path_for 'ruby', ruby_version)
-        generate_sdoc_for :name => 'ruby', :version => ruby_version, :path => download_ruby(ruby_version)
-        changes = true
-      end
-      
-      if changes || !File.exists?(File.join(project_path_for(project_name), 'index.html'))
-        FileUtils.rm_rf project_path_for project_name
-        sdoc_merge project_name, ruby_version
-      end
-      
-      cleanup!
-      
-      `open #{File.join project_path_for(project_name), 'index.html'}`
     end
     
   private
