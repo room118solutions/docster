@@ -1,6 +1,8 @@
 require 'bundler'
 
 module Docster
+  class RubyNotFound < StandardError; end
+
   class DocGenerator
     def self.generate!(project_name, groups, ruby_version)
       begin
@@ -106,6 +108,7 @@ module Docster
       ruby_archive = "ruby-#{version}.tar.bz2"
       archive_path = File.join tmp_path, ruby_archive
       `wget http://ftp.ruby-lang.org/pub/ruby/#{version.split('.')[0..1].join('.')}/#{ruby_archive} -O "#{archive_path}"`
+      raise RubyNotFound unless File.size?(archive_path)
       `tar -xf "#{archive_path}" -C "#{tmp_path}"`
       File.join tmp_path, "ruby-#{version}"
     end
