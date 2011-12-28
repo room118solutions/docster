@@ -1,3 +1,1 @@
-module Docster
-  # Your code goes here...
-end
+module Docster; end

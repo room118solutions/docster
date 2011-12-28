@@ -1,0 +1,3 @@
+#!/usr/bin/env ruby
+require 'docster/cli'
+Docster::CLI.start

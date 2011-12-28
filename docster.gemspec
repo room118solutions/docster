@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email       = ["info@room118solutions.com"]
   s.homepage    = "http://github.com/room118solutions/docster"
   s.summary     = %q{Generates searchable documentation for your ruby project}
-  s.description = %q{TODO: Write a gem description}
+  s.description = s.summary
 
   s.rubyforge_project = "docster"
 
@@ -18,4 +18,8 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
+  
+  s.add_dependency "sdoc"
+  s.add_dependency "thor"
+  s.add_development_dependency "rake"
 end
