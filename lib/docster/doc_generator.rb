@@ -46,9 +46,9 @@ module Docster
       paths = ruby_version ? doc_paths << %Q( "#{doc_path_for 'ruby', ruby_version}") : doc_paths
       
       begin
-        print "Generating project documentation...".yellow
-        raise SdocMergeError unless system %Q(sdoc-merge --title "#{project_name}" --op "#{project_path_for project_name}" --names "#{names}" #{paths} &> /dev/null)
-        puts "done!".green
+        run_command "Generating project documentation...",
+          %Q(sdoc-merge --title "#{project_name}" --op "#{project_path_for project_name}" --names "#{names}" #{paths}),
+          SdocMergeError
       rescue SdocMergeError => e
         # On error, remove potentially partial documentation
         FileUtils.rm_rf project_path_for(project_name)
@@ -58,9 +58,9 @@ module Docster
     
     def self.generate_sdoc_for(options = {})
       begin
-        print "Generating sdoc for #{options[:name]}-#{options[:version]}...".yellow
-        raise SdocError unless system %Q(sdoc -o "#{doc_path_for options[:name], options[:version]}" "#{options[:path]}" &> /dev/null)
-        puts "done!".green
+        run_command "Generating sdoc for #{options[:name]}-#{options[:version]}...",
+          %Q(sdoc -o "#{doc_path_for options[:name], options[:version]}" "#{options[:path]}"),
+          SdocError
       rescue SdocError => e
         # On error, remove potentially partial documentation
         FileUtils.rm_rf doc_path_for(options[:name], options[:version])
@@ -130,17 +130,23 @@ module Docster
       ruby_archive = "ruby-#{version}.tar.bz2"
       archive_path = File.join tmp_path, ruby_archive
       
-      print "Downloading ruby #{version} source from ruby-lang.org, this may take a while...".yellow
-      raise WgetError unless system %Q(wget http://ftp.ruby-lang.org/pub/ruby/#{version.split('.')[0..1].join('.')}/#{ruby_archive} -O "#{archive_path}" &> /dev/null)
-      puts "done!".green
-      
+      run_command "Downloading ruby #{version} source from ruby-lang.org, this may take a while...",
+        %Q(wget http://ftp.ruby-lang.org/pub/ruby/#{version.split('.')[0..1].join('.')}/#{ruby_archive} -O "#{archive_path}"),
+        WgetError
+            
       raise RubyNotFound unless File.size?(archive_path)
       
-      print "Extracting ruby...".yellow
-      raise RubyExtractionError unless system %Q(tar -xf "#{archive_path}" -C "#{tmp_path}" &> /dev/null)
-      puts "done!".green
-      
+      run_command "Extracting ruby...",
+        %Q(tar -xf "#{archive_path}" -C "#{tmp_path}"),
+        RubyExtractionError
+            
       File.join tmp_path, "ruby-#{version}"
+    end
+    
+    def self.run_command(before_message, command, error_class)
+      print before_message.yellow
+      raise error_class unless system "#{command} &> /dev/null"
+      puts "done!".green
     end
   end
 end
