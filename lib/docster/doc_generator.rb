@@ -2,7 +2,11 @@ require 'bundler'
 
 module Docster
   class RubyNotFound < StandardError; end
-
+  class SdocMergeError < StandardError; end
+  class SdocError < StandardError; end
+  class WgetError < StandardError; end
+  class RubyExtractionError < StandardError; end
+  
   class DocGenerator
     def self.generate!(project_name, groups, ruby_version)
       begin
@@ -28,7 +32,7 @@ module Docster
           FileUtils.rm_rf project_path_for project_name
           sdoc_merge project_name, ruby_version
         end
-              
+        
         `open #{File.join project_path_for(project_name), 'index.html'}`
       ensure
         cleanup!
@@ -39,11 +43,28 @@ module Docster
     def self.sdoc_merge(project_name, ruby_version)
       names = ruby_version ? [gem_names, 'ruby'].join(',') : gem_names
       paths = ruby_version ? doc_paths << %Q( "#{doc_path_for 'ruby', ruby_version}") : doc_paths
-      `sdoc-merge --title "#{project_name}" --op "#{project_path_for project_name}" --names "#{names}" #{paths}`
+      
+      begin
+        print "Generating project documentation..."
+        raise SdocMergeError unless system %Q(sdoc-merge --title "#{project_name}" --op "#{project_path_for project_name}" --names "#{names}" #{paths} &> /dev/null)
+        puts "done!"
+      rescue SdocMergeError => e
+        # On error, remove potentially partial documentation
+        FileUtils.rm_rf project_path_for(project_name)
+        raise e
+      end
     end
     
-    def self.generate_sdoc_for(options = {})      
-      `sdoc -o "#{doc_path_for options[:name], options[:version]}" "#{options[:path]}"`
+    def self.generate_sdoc_for(options = {})
+      begin
+        print "Generating sdoc for #{options[:name]}-#{options[:version]}..."
+        raise SdocError unless system %Q(sdoc -o "#{doc_path_for options[:name], options[:version]}" "#{options[:path]}" &> /dev/null)
+        puts "done!"
+      rescue SdocError => e
+        # On error, remove potentially partial documentation
+        FileUtils.rm_rf doc_path_for(options[:name], options[:version])
+        raise e
+      end
     end
     
     def self.gems
@@ -107,9 +128,17 @@ module Docster
     def self.download_ruby(version)
       ruby_archive = "ruby-#{version}.tar.bz2"
       archive_path = File.join tmp_path, ruby_archive
-      `wget http://ftp.ruby-lang.org/pub/ruby/#{version.split('.')[0..1].join('.')}/#{ruby_archive} -O "#{archive_path}"`
+      
+      print "Downloading ruby #{version} source from ruby-lang.org, this may take a while..."
+      raise WgetError unless system %Q(wget http://ftp.ruby-lang.org/pub/ruby/#{version.split('.')[0..1].join('.')}/#{ruby_archive} -O "#{archive_path}" &> /dev/null)
+      puts "done!"
+      
       raise RubyNotFound unless File.size?(archive_path)
-      `tar -xf "#{archive_path}" -C "#{tmp_path}"`
+      
+      print "Extracting ruby..."
+      raise RubyExtractionError unless system %Q(tar -xf "#{archive_path}" -C "#{tmp_path}" &> /dev/null)
+      puts "done!"
+      
       File.join tmp_path, "ruby-#{version}"
     end
   end
