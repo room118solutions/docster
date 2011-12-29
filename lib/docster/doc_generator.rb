@@ -1,4 +1,5 @@
 require 'bundler'
+require 'colored'
 
 module Docster
   class RubyNotFound < StandardError; end
@@ -45,9 +46,9 @@ module Docster
       paths = ruby_version ? doc_paths << %Q( "#{doc_path_for 'ruby', ruby_version}") : doc_paths
       
       begin
-        print "Generating project documentation..."
+        print "Generating project documentation...".yellow
         raise SdocMergeError unless system %Q(sdoc-merge --title "#{project_name}" --op "#{project_path_for project_name}" --names "#{names}" #{paths} &> /dev/null)
-        puts "done!"
+        puts "done!".green
       rescue SdocMergeError => e
         # On error, remove potentially partial documentation
         FileUtils.rm_rf project_path_for(project_name)
@@ -57,9 +58,9 @@ module Docster
     
     def self.generate_sdoc_for(options = {})
       begin
-        print "Generating sdoc for #{options[:name]}-#{options[:version]}..."
+        print "Generating sdoc for #{options[:name]}-#{options[:version]}...".yellow
         raise SdocError unless system %Q(sdoc -o "#{doc_path_for options[:name], options[:version]}" "#{options[:path]}" &> /dev/null)
-        puts "done!"
+        puts "done!".green
       rescue SdocError => e
         # On error, remove potentially partial documentation
         FileUtils.rm_rf doc_path_for(options[:name], options[:version])
@@ -129,15 +130,15 @@ module Docster
       ruby_archive = "ruby-#{version}.tar.bz2"
       archive_path = File.join tmp_path, ruby_archive
       
-      print "Downloading ruby #{version} source from ruby-lang.org, this may take a while..."
+      print "Downloading ruby #{version} source from ruby-lang.org, this may take a while...".yellow
       raise WgetError unless system %Q(wget http://ftp.ruby-lang.org/pub/ruby/#{version.split('.')[0..1].join('.')}/#{ruby_archive} -O "#{archive_path}" &> /dev/null)
-      puts "done!"
+      puts "done!".green
       
       raise RubyNotFound unless File.size?(archive_path)
       
-      print "Extracting ruby..."
+      print "Extracting ruby...".yellow
       raise RubyExtractionError unless system %Q(tar -xf "#{archive_path}" -C "#{tmp_path}" &> /dev/null)
-      puts "done!"
+      puts "done!".green
       
       File.join tmp_path, "ruby-#{version}"
     end
