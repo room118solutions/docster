@@ -14,5 +14,6 @@ module Docster
       DocGenerator.generate! options.name, options.groups, (options.without_ruby ? nil : options.ruby_version)
     end
 
+    # TODO: #open should generate, then open merged docs.  #generate should just RE-generate and not open.
   end
 end
